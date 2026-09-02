@@ -1,0 +1,17 @@
+create extension if not exists pgcrypto;
+create table if not exists public.invitations (id uuid primary key default gen_random_uuid(), owner_id uuid references auth.users(id) on delete cascade, slug text unique not null, groom text not null, bride text not null, event_date date, event_time time, venue text, address text, theme text default 'elegance', music_url text, map_url text, story text, status text default 'draft', created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.guests (id uuid primary key default gen_random_uuid(), invitation_id uuid not null references public.invitations(id) on delete cascade, name text not null, phone text, status text default 'pending', count int default 1, created_at timestamptz default now());
+create table if not exists public.gallery (id uuid primary key default gen_random_uuid(), invitation_id uuid not null references public.invitations(id) on delete cascade, storage_path text not null, caption text, created_at timestamptz default now());
+create index if not exists invitations_slug_idx on public.invitations(slug);
+create index if not exists guests_invitation_idx on public.guests(invitation_id);
+alter table public.invitations enable row level security; alter table public.guests enable row level security; alter table public.gallery enable row level security;
+create policy "public published invitations" on public.invitations for select using (status='published');
+create policy "owners manage invitations" on public.invitations for all using (auth.uid()=owner_id) with check (auth.uid()=owner_id);
+create policy "public read guests" on public.guests for select using (exists(select 1 from public.invitations i where i.id=invitation_id and i.status='published'));
+create policy "public RSVP insert" on public.guests for insert with check (exists(select 1 from public.invitations i where i.id=invitation_id and i.status='published'));
+create policy "owners manage guests" on public.guests for all using (exists(select 1 from public.invitations i where i.id=invitation_id and i.owner_id=auth.uid()));
+create policy "public read gallery" on public.gallery for select using (exists(select 1 from public.invitations i where i.id=invitation_id and i.status='published'));
+create policy "owners manage gallery" on public.gallery for all using (exists(select 1 from public.invitations i where i.id=invitation_id and i.owner_id=auth.uid()));
+insert into storage.buckets(id,name,public) values ('invitation-gallery','invitation-gallery',true) on conflict(id) do nothing;
+create policy "gallery public read" on storage.objects for select using (bucket_id='invitation-gallery');
+create policy "gallery auth upload" on storage.objects for insert to authenticated with check (bucket_id='invitation-gallery');

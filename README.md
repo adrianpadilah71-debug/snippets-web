@@ -1,28 +1,16 @@
-<!-- [SNIPPET_REGISTRY disabled] -->
-# Firebase Web Snippets
+# ADR INVITATION V5.1 — PRODUCTION FOUNDATION
 
-This repository holds code snippets used in Web documentation
-on [firebase.google.com](https://firebase.google.com/docs/).
+Perbaikan dari ZIP V5.0: source 36 template, Supabase schema + RLS + Storage, RSVP/guest data model, public slug model, payment Edge Function Midtrans/Xendit, automated tests, Android foundation, dan release signing configuration berbasis secret.
 
-These snippets are part of our documentation and best read in the context of a documentation page rather than used directly. If you're looking to get started with the Firebase Web SDK the best place to start is [quickstart-js](https://github.com/firebase/quickstart-js).
+## Penting
+`package-lock.json` sengaja tidak dipalsukan. Lingkungan ini tidak dapat mengakses npm registry; jalankan `npm install` sekali di PC/CI yang online untuk menghasilkan lockfile resmi, lalu commit lockfile tersebut.
 
-## Example
+Keystore release dan payment secret tidak disertakan. Buat/pegang secara aman di luar repository dan masukkan melalui secrets/gradle.properties.
 
-Consider this page:
-https://firebase.google.com/docs/database/web/lists-of-data
-
-Each snippet in the page is dynamically included from the source in this repository, in this case mostly from this file:
-https://github.com/firebase/snippets-web/blob/master/database/lists-of-data.js
-
-Each snippet has a "region tag" which is defined by `// [START tag]` and `// [END tag]` comments. The code between the tags can be included in our documentation. Keeping the code on GitHub, rather than hard-coded into the HTML of our documentation, allows us to ensure the code is correct and up to date.
-
-## Contributing
-
-We love contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
-## Build Status
-
-[![Actions Status][gh-actions-badge]][gh-actions]
-
-[gh-actions]: https://github.com/firebase/snippets-web/actions
-[gh-actions-badge]: https://github.com/firebase/snippets-web/workflows/CI%20Tests/badge.svg
+## Setup
+1. `npm install`
+2. `npm test`
+3. `npm run build`
+4. Isi `.env` dari `.env.example` dan jalankan `supabase/migrations/001_init.sql`.
+5. Deploy `supabase/functions/create-payment` dan set `MIDTRANS_SERVER_KEY` / `XENDIT_SECRET_KEY`.
+6. `npm run android:sync` lalu `npm run android:debug` atau `npm run android:release`.

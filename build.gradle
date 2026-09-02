@@ -1,0 +1,6 @@
+plugins { id 'com.android.application' }
+android { namespace 'com.adr.invitation'; compileSdk 35
+ defaultConfig { applicationId 'com.adr.invitation'; minSdk 23; targetSdk 35; versionCode 51; versionName '5.1.0' }
+ signingConfigs { release { if (project.hasProperty('ADR_RELEASE_STORE_FILE')) { storeFile file(ADR_RELEASE_STORE_FILE); storePassword ADR_RELEASE_STORE_PASSWORD; keyAlias ADR_RELEASE_KEY_ALIAS; keyPassword ADR_RELEASE_KEY_PASSWORD } } }
+ buildTypes { release { minifyEnabled false; if (project.hasProperty('ADR_RELEASE_STORE_FILE')) signingConfig signingConfigs.release } }
+}
